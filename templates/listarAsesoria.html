@@ -1,0 +1,121 @@
+{% extends 'index.html' %}
+{% block content %}
+      <div class="col col-md-16 container">
+        <h3>Administración de Asesorias</h3>
+        <div style="visibility:hidden"   id="showDep">
+          texto que no importa
+        </div>
+        <form action="/logout" method="post">
+        {% csrf_token %}
+          <button type="submit" name="logout" class="btn btn-danger">Logout</button>
+        </form>
+        <p></p>
+        <table id="tabla1" class="table table-striped">
+          <thead>
+            <tr>
+             <th></th>
+             <th>Curso</th>
+             <th>Profesor</th>
+             <th>Horario</th>
+             <th>Lugar</th>
+             <th>Día</th>
+             <th>Sección</th>
+             <th>Operaciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in arreglo %}
+              <tr>
+                {% ifequal tipo 1 %}
+                  {% ifequal item.id id %}
+
+                      <form action="/guardarCambios" method="post">
+                        {% csrf_token %}
+
+                        <th><input type="text" value="{{ item.curso }}" name="curso" ></th>
+                        <th><input type="text"  value="{{ item.profesor }}"  name="profesor" ></th>
+                        <th><input type="text"  value="{{ item.horario }}" name="horario" ></th>
+                        <th><input type="text"  value="{{ item.lugar }}" name="lugar" ></th>
+                        <th><input type="text"  value="{{ item.dia }}" name="dia" ></th>
+                        <th><input type="text"  value="{{ item.seccion }}" name="seccion" ></th>
+                        <th>
+                          <input type="submit" name="guardar" value="Guardar Cambios" class="btn btn-primary">
+                          <a href="/cancelar" class="btn btn-secondary">Cancelar</a>
+                        </th>
+                      </form>
+
+                    {% else %}
+                    <form method="post" action="/eliminarAsesoria">
+                      {% csrf_token %}
+                      <th><input type= "hidden" name="id_asesoria" value= {{ item.id }}></th>
+                      <th>{{ item.curso }}</th>
+                      <th>{{ item.profesor }}</th>
+                      <th>{{ item.horario }}</th>
+                      <th>{{ item.lugar }}</th>
+                      <th>{{ item.dia }}</th>
+                      <th>{{ item.seccion }}</th>
+                      <th>
+                        <input type="submit" value= "Eliminar" class="btn btn-danger">
+                        <a href="/editarAsesoria?id={{item.id}}" class="btn btn-warning">Editar</a>
+                      </th>
+                    </form>
+                  {% endifequal %}
+                {% else %}
+                    <form method="post" action="/eliminarAsesoria">
+                      {% csrf_token %}
+                      <th><input type= "hidden" name="id_asesoria" value= {{ item.id }}></th>
+                      <th>{{ item.curso }}</th>
+                      <th>{{ item.profesor }}</th>
+                      <th>{{ item.horario }}</th>
+                      <th>{{ item.lugar }}</th>
+                      <th>{{ item.dia }}</th>
+                      <th>{{ item.seccion }}</th>
+                      <th>
+                        <input type="submit" value= "Eliminar" class="btn btn-danger">
+                        <a href="/editarAsesoria?id= {{ item.id }}" class="btn btn-warning">Editar</a>
+                      </th>
+                    </form>
+                {% endifequal %}
+              </tr>
+
+            {% endfor %}
+          <tr>
+            {% ifequal agregar 0 %}
+            <!---<form method="get" action="/agregarAsesoria">
+              {% csrf_token %}
+              <th></th><th></th><th></th><th></th><th></th><th></th>
+              <th>
+                <input type="submit" value="Agregar asesoria" class="btn btn-success">
+              </th>
+            </form>--->
+            {% else %}
+              <form action="/guardarAsesoria" method="post">
+              {% csrf_token %}
+                <th></th>
+                <th><input type="text" name="curso" value=""></th>
+                <th><input type="text" name="profesor" value=""></th>
+                <th><input type="text" name="horario" value=""></th>
+                <th><input type="text" name="lugar" value=""></th>
+                <th><input type="text" name="dia" value=""></th>
+                <th>
+                  <input type="submit" name="guardar" value="Guardar Asesoria" class="btn btn-primary">
+                  <a href="/cancelar" class="btn btn-secondary">Cancelar</a>
+                </th>
+              </form>
+            {%endifequal%}
+          </tr>
+          </tbody>
+        </table>
+        <div>
+          <form method="get" action="/agregarAsesoria">
+            {% csrf_token %}
+            <th></th><th></th><th></th><th></th><th></th><th></th>
+            <th>
+              <input type="submit" value="Agregar asesoria" class="btn btn-success">
+            </th>
+          </form>
+        </div>
+
+      </div>
+
+{% endblock %}

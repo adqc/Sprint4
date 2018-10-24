@@ -1,0 +1,131 @@
+{% extends 'index.html' %}
+{% block javascript %}
+  <script>
+  $("#id_curso").change(function () {
+
+      console.log($(this).val() );
+      var curso=$(this).val()
+
+      $.ajax({
+           url: 'validate_curso',
+           data: {
+             'curso': curso
+           },
+           dataType: 'json',
+           success: function (data) {
+             var profes = JSON.parse(data.profesores);
+
+              var $el = $("#id_profesor");
+              $el.empty(); // remove old options
+              $el.append($("<option></option>")
+                 .attr("value", "Seleccione un profesor").text("Seleccione un profesor"));
+              $.each(profes, function(key,value) {
+                $el.append($("<option></option>")
+                   .attr("value", value).text(value));
+              });
+           }
+         });
+       });
+  $("#id_profesor").change(function () {
+      console.log($(this).val() );
+      var profesor=$(this).val();
+      profe=profesor.split(" ")
+      console.log("hollaaa  "+profe[1]);
+      $.ajax({
+           url: 'validate_profesor',
+           data: {
+             'first': profe[0],
+             'last': profe[1]
+           },
+           dataType: 'json',
+           success: function (data) {
+             /*var secciones = JSON.parse(data.seccion );
+             /*var codigos = JSON.parse(data.cod );*/
+             var secciones=JSON.parse(data.seccion)
+             /*console.log(secciones[0]);*/
+             console.log();
+              var $el = $("#id_seccion");
+              $el.empty(); // remove old options
+              $.each(secciones, function(key,value) {
+                $el.append($("<option></option>")
+                .attr("value", value).text(value));
+              });
+
+           }
+         });
+       });
+
+  </script>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-4">
+            <div class="card">
+                <h4 class="card-header text-center">Agregar Asesoria</h4>
+                <div class="card-block">
+                    <form method="post" action="/guardarAsesoria">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label>Curso:</label>
+
+                              <select name="curso" id="id_curso" class="form-group has-danger">
+                                <option type="submit" value="Seleccione un curso">Seleccione un curso</option>
+                                {% for item in curso %}
+                                  <option type="submit" value="{{item.nombre}}">{{item.nombre}}</option>
+                                {% endfor %}
+                              </select>
+
+
+                        </div>
+                        <div class="form-group">
+                            <label>Profesor:</label>
+                              <select name="profesor"  id="id_profesor" class="form-group has-danger">
+
+                                  <option type="submit" value="{{item.first_name}}">-</option>
+
+                              </select>
+
+
+                        </div>
+                        <div class="form-group">
+                            <label>Seccion:</label>
+                              <select name="seccion" id="id_seccion"class="form-group has-danger">
+
+                                  <option type="submit" value="{{item.codigo}}"></option>
+
+                              </select>
+
+                        </div>
+                        <div class="form-group">
+                            <label>Horario:</label>
+                            <input name="horario" type="text" class="form-control">
+
+                        </div>
+                        <div class="form-group">
+                            <label>Lugar:</label>
+                            <input name="lugar" type="text" class="form-control">
+
+                        </div>
+                        <div class="form-group">
+                            <label>Día:</label>
+                            <select name="dia" class="form-group has-danger">
+                              <option value="lunes">lunes</option>
+                              <option value="martes">martes</option>
+                              <option value="miercoles">miercoles</option>
+                              <option value="jueves">jueves</option>
+                              <option value="viernes">viernes</option>
+                              <option value="sabado">sabado</option>
+                            </select>
+                        </div>
+                        <div class="mx-auto text-center">
+                            <input type="submit" value="Agregar" class="btn btn-primary">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+      </div>
+  </div>
+
+{% endblock %}
