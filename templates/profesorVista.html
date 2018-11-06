@@ -48,6 +48,7 @@
         <th>Día</th>
         <th>Sección</th>
         <th>Comentario</th>
+        <th>Fecha</th>
         <th>Operación</th>
       </tr>
     </thead>
@@ -63,6 +64,7 @@
             <th>{{ item.dia }}</th>
             <th>{{ item.seccion }}</th>
             <th>{{ item.comentario}}</th>
+            <th>{{ item.fechaCita|date:'d-m-Y' }}</th>
             <th>
             <a href="#" data-toggle="modal" data-target="#{{item.id}}"> Atendido <i class="fa fa-pencil-square-o"></i> </a>
             </th>

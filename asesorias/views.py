@@ -19,7 +19,6 @@ def mostrarCursos(request):
 
 
 
-
 def listarAsesoria(request):
     tipo = 0
     agregar = 0
@@ -109,6 +108,7 @@ def guardarAsesoria(request):
         #horario
         #lugar
         #seccion
+        
     objCurso= Curso.objects.get(nombre=curso)
     arrProf=profesor.split(" ")
     objProf= User.objects.get(first_name=arrProf[0])

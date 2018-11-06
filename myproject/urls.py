@@ -14,7 +14,7 @@ urlpatterns = [
 
 
 
-    #path(r'^register', views.register),
+    #path(r'^register', views.register), 
     #path('index', views.index),
     path('', accounts_views.index),
     path('login', accounts_views.login),
@@ -41,6 +41,7 @@ urlpatterns = [
 
     path('validate_curso', accounts_views.validate_curso),
     path('validate_profesor', accounts_views.validate_profesor),
+    path('obtenerFechaCita', accounts_views.obtenerFechaCita),
 
 
     path('citaAtendida', accounts_views.citaAtendida),

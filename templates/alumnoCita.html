@@ -55,6 +55,7 @@
         <th>Día</th>
         <th>Sección</th>
         <th>Comentario</th>
+        <th>Fecha</th>
         <th>Archivo</th>
         <th>Operación</th>
       </tr>
@@ -72,6 +73,7 @@
             <th>{{ item.dia }}</th>
             <th>{{ item.seccion }}</th>
             <th>{{ item.comentario }}</th>
+            <th>{{ item.fechaCita|date:'Y-m-d' }}</th>
             {% ifequal item.archivo 0 %}
               {% csrf_token %}
               <th>No hay archivo</th>

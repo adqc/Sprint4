@@ -7,6 +7,9 @@ from django.http import JsonResponse
 import json
 import cloudinary.api
 import cloudinary.uploader
+from datetime import date, timedelta
+
+
 
 cloudinary.config(
   cloud_name = "dcmdp3lbl",
@@ -14,6 +17,16 @@ cloudinary.config(
   api_secret = "cYxPSGxHfzbGqA3UK6QcBKShChw"
 )
 
+def mostrarFechas(year,dia):
+    arrFechas=[]
+    dt = date(year, 8, 13)
+    #dt = date(13, 8, year)
+    dt += timedelta(days = dia - dt.weekday())
+    while dt.year == year:
+      #yield dt
+      arrFechas.append(dt)
+      dt += timedelta(days = 7)
+    return arrFechas
 
 def index(request):
     tipo = 0
@@ -84,6 +97,7 @@ def vistaProfesor(request):
             alumno= User.objects.get(id=z.alumno_id)
             x_info['alumno']= alumno.first_name
             x_info['comentario']= z.comentario
+            x_info['fechaCita'] = z.fechaCita
             factTable = FactTable.objects.filter(asesoria_id= z.asesoria_id)
 
             for x in factTable:
@@ -149,32 +163,46 @@ def vistaAlumno(request):
     #print(arreglo)
 
     return render(request, 'alumnoVista.html', locals())
+def uploadFiles(idCita,file):
 
+    nomFile=str(file)
+    nomFin=str(idCita)+','+nomFile
+    u=cloudinary.uploader.upload(file,resource_type="raw", public_id= nomFin )
+    url=u['url']
+    result = cloudinary.Search().expression('public_id='+nomFin+'').execute()
+    return nomFin
 def generarCita(request):
-    file= request.FILES['file']
-    print(file)
+    arrFechas=[]
+    arrFechas=mostrarFechas(2018,0)
+    val=request.POST['fecha_pactada']
+    print(val)
+    for s in arrFechas:
+       print(s)
+    file=request.FILES['file'] if 'file' in request.FILES else False
+    if (Cita.objects.filter(alumno_id=request.session['id'],fechaCita=request.POST['fecha_pactada'], asesoria_id=request.POST['id_asesoria'], estado=True).exists()):
+        #si es que ya existe una cita pactada
+        #return redirect('/alumnoVista')
+        citaGenerada=True
+        #request.session=request.session['id']
 
-    if (Cita.objects.filter(alumno_id=request.session['id'], asesoria_id=request.POST['id_asesoria'], estado= True).exists()):
-        print("aaaaaaaaaaaaaaa")
-        return redirect('/alumnoVista')
-    else:
-        cita= Cita.objects.create(alumno_id= request.session['id'], asesoria_id=request.POST['id_asesoria'], comentario=request.POST['comentario'], estado=True)
-        cita.save()
-        idCita=cita.id
-        nomFile=str(file)
-        nomFin=str(idCita)+','+nomFile
-        u=cloudinary.uploader.upload(file,resource_type="raw", public_id= nomFin )
-        url=u['url']
-        result = cloudinary.Search().expression('public_id='+nomFin+'').execute()
-        cita.archivo=nomFin
-        cita.save()
+        #return render(request,'alumnoVista.html',locals())
+        #return redirect('/alumnoVista')
         return redirect('/alumnoCita')
+    else:
+        cita= Cita.objects.create(alumno_id= request.session['id'], asesoria_id=request.POST['id_asesoria'],comentario=request.POST['comentario'], estado=True,fechaCita=val)
+        cita.save()
+    if file==False:# si es que no hay archivo
+        print("No se grabo")
+    else:
+
+        cita.archivo=uploadFiles(cita.id,file)
+        cita.save()
+    return redirect('/alumnoCita')
 
 def consultarCita(request):
     return redirect('/alumnoCita')
 
 def alumnoCita(request):
-
     arreglo=[]
     nombreAlumno = User.objects.get(id=request.session['id'])
     id_alumno = request.session['id']
@@ -189,6 +217,7 @@ def alumnoCita(request):
             x_info = {}
             x_info['id'] = x.id
             x_info['comentario'] = x.comentario
+            x_info['fechaCita'] = x.fechaCita
             result = cloudinary.Search().expression('public_id:'+x.archivo+'').execute()
             print("LEEEN")
             print(result["total_count"])
@@ -338,23 +367,34 @@ def quitarDup(a):
 def validate_curso(request):
     curso = request.GET.get('curso', None)
     buscarCurso=Curso.objects.filter(nombre__iexact=curso)
-    id= Curso.objects.get(nombre__iexact=curso)
-    factTable=FactTable.objects.filter(curso_id=id.id)
+    objCurso= Curso.objects.get(nombre__iexact=curso)
+    factTable=FactTable.objects.filter(curso_id=objCurso.id)
     print(curso)
     print(buscarCurso)
     print(id)
     print(factTable)
     temp=[]
     profes=[]
-    for i in factTable:
-        profesor=User.objects.filter(id=i.profesor_id)
+    Cursos=[]
+    print()
+    profesor=[]
+    Secciones=[]
+    arr=[]
+    Secciones=Seccion.objects.filter(curso=objCurso)
+    print("LEN SECCIONESs")
+    print(len(Secciones))
+    for i in Secciones:
+        print("Seccion")
+        print(i.profesor)
+        profesor.append(i.profesor)
+        print(profesor)
         for y in profesor:
             temp.append(y)
             arr=quitarDup(temp)
     for i in arr:
         profes.append(i.first_name + " " + i.last_name)
         print(i.first_name)
-    print(len(profes))
+    #print(len(profes))
     data = {
         'is_taken' : True,
         'profesores' : json.dumps(profes)
@@ -367,16 +407,24 @@ def validate_profesor(request):
     id=User.objects.get(first_name__iexact=first)
     id2=User.objects.get(last_name__iexact=last)
     factTable=FactTable.objects.filter(profesor_id=id.id)
+    temp=[]
+    secciones=[]
+    Secciones=Seccion.objects.filter(profesor=id)
     if id.id==id2.id:
-        temp=[]
-        secciones=[]
-        for i in factTable:
-            seccion=Seccion.objects.filter(id=i.seccion_id)
-            print("sssssss")
-            for y in seccion:
-                print(y.codigo)
-                temp.append(y)
-                arr=quitarDup(temp)
+        for y in Secciones:
+            print(y.codigo)
+            temp.append(y)
+            arr=quitarDup(temp)
+    #if id.id==id2.id:
+    #    temp=[]
+    #    secciones=[]
+    #    for i in factTable:
+    #        seccion=Seccion.objects.filter(id=i.seccion_id)
+    #        print("sssssss")
+    #        for y in seccion:
+    #            print(y.codigo)
+    #            temp.append(y)
+    #            arr=quitarDup(temp)
         for i in arr:
             secciones.append(i.codigo)
             print("finnnn")
@@ -481,6 +529,43 @@ def citaFin(request):
                     arreglo.append(x_info)
     #print(arreglo)
     return render(request, 'citaFin.html', locals())
+
+
+def obtenerFechaCita(request):
+    numSemana = request.GET.get('numSemana', None)
+    idSemana = request.GET.get('idSemana', None)
+    diaSemana = request.GET.get('diaSemana', None)
+    switcher = {
+        "lunes": 0,
+        "Martes": 1,
+        "Miercoles": 2,
+        "jueves": 3,
+        "Viernes": 4,
+        "sabado": 5,
+        "Domingo": 6,
+    }
+    numDia=switcher[diaSemana]
+    print("numDIAAA")
+    print(numDia)
+    arrSepId=[]
+    arrSepNum=[]
+    arrSepId=idSemana.split("/")
+    arrSepNum=numSemana.split("/")
+    arrFechas=[]
+    arrFechas=mostrarFechas(2018,numDia)
+    print(len(arrFechas))
+    print(numSemana)
+    print("split")
+    print(arrSepNum[1])
+    semanaElegida=arrSepNum[1]
+    fecha=arrFechas[int(semanaElegida)-1]
+    print("FECHAAA")
+    print(fecha)
+    data = {
+        'is_taken' : True,
+        'fecha' : fecha
+    }
+    return JsonResponse(data)
 
 def regresarVistaProfe(request):
     return redirect('/profesorVista')

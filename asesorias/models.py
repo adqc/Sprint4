@@ -3,7 +3,7 @@ from django.db import models
 from accounts.models import User
 # Create your models here.
 
-
+import datetime
 
 class Curso(models.Model):
     #codigo = models.AutoField()
@@ -31,6 +31,7 @@ class Cita(models.Model):
     estado=models.BooleanField(default=True)
     archivo=models.CharField(max_length=255, default='null')
     feedback= models.CharField(max_length=255, default='null')
+    fechaCita=models.DateTimeField(blank=True, null=True,default=datetime.date.today)
 
 class FactTable(models.Model):
     curso=models.ForeignKey(Curso,on_delete=models.CASCADE, related_name = 'cursoFact')
