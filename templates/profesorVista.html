@@ -47,9 +47,11 @@
         <th>Lugar</th>
         <th>Día</th>
         <th>Sección</th>
-        <th>Comentario</th>
+
         <th>Fecha</th>
+        <th>Archivo</th>
         <th>Operación</th>
+
       </tr>
     </thead>
     <tbody>
@@ -63,11 +65,12 @@
             <th>{{ item.lugar }}</th>
             <th>{{ item.dia }}</th>
             <th>{{ item.seccion }}</th>
-            <th>{{ item.comentario}}</th>
+
             <th>{{ item.fechaCita|date:'d-m-Y' }}</th>
             <th>
-            <a href="#" data-toggle="modal" data-target="#{{item.id}}"> Atendido <i class="fa fa-pencil-square-o"></i> </a>
+            <a href="#" data-toggle="modal" data-target="#{{item.id}}"> Ver detalle <i class="fa fa-pencil-square-o"></i> </a>
             </th>
+
           </tr>
       {% endfor %}
     </div>
@@ -86,7 +89,7 @@
             <div class="container-fluid">
               <div class="row">
                 <div class="col-sm-6">
-                  <h4>Detalle de Cita</h4>
+                  <h5>Detalle de Cita</h5>
                   <br>
                   <ul style= "list-style-type:none">
                     <li><medium><input type= "hidden" name="id_cita" value= {{ item.id }}></medium></li>
@@ -95,10 +98,21 @@
                     <li><medium>Seccion: {{ item.seccion }} </medium></li>
                     <li><medium>Lugar: {{ item.lugar }} </medium></li>
                     <li><medium>Día: {{item.dia }} </medium></li>
+                    <li><medium>Comentario: {{item.comentario }} </medium></li>
+
+                    {% ifequal item.archivo 0 %}
+                      {% csrf_token %}
+                      <a>No hay archivo</a>
+
+                    {%else%}
+                    {% csrf_token %}
+                    <li>  <a href="{{ item.archivo }}">Descargar Archivo<i class="fa fa-cloud-download"></i></a></li>
+
+                    {% endifequal %}
                     </ul>
                 </div>
                 <div class="col-sm-6">
-                  <h5>Comentario</h5>
+                  <h5>Feedback</h5>
                   <textarea name="feedback" rows="4" cols="40"></textarea>
                   <button class="btn btn-primary" type="submit" name="agregarComentario">Submit</button>
                   </div>

@@ -98,6 +98,14 @@ def vistaProfesor(request):
             x_info['alumno']= alumno.first_name
             x_info['comentario']= z.comentario
             x_info['fechaCita'] = z.fechaCita
+            result = cloudinary.Search().expression('public_id:'+z.archivo+'').execute()
+            print("LEEEN")
+            print(result["total_count"])
+            cantResult=int(result["total_count"])
+            if (cantResult!=1):
+                x_info['archivo']=0
+            else:
+                x_info['archivo']=result['resources'][0]['secure_url']
             factTable = FactTable.objects.filter(asesoria_id= z.asesoria_id)
 
             for x in factTable:
